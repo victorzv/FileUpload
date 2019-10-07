@@ -1,0 +1,154 @@
+﻿@model IEnumerable<WebApplicationUploadV2.Models.FileDownload>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+        td {
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+      
+     <input type="file" id="file_select" name="docs" multiple /><br>
+    @*<input type="file" id="file2" /><br>
+    <input type="file" id="file3" /><br>*@
+    <br>
+    <button type="button" onclick="uploadFiles();">
+        Upload!
+    </button>
+
+    <table>
+        <tr>
+            <td><input type="checkbox" id="checkall"/></td>
+            <td>File name</td>
+            <td>Download</td>
+        </tr>
+        @foreach (var f in Model)
+        {
+            <tr id="@f.Id">
+                <td><input type="checkbox" class="check" id="@f.Id" /></td>
+                <td>@f.Filename</td>
+                <td><input type="button" value="Download" class="dowloadButton" /></td>
+            </tr>
+        }
+
+    </table>
+
+    <button id="ok">OK</button>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+            crossorigin="anonymous"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $('#checkall').change(function (e) {
+                console.log($(this).is(":checked"));
+                $('.check').attr('checked',$(this).is(":checked"));
+            });
+
+            $('#ok').on('click', function (e) {
+                $.ajax({
+                    url: "/home/files",
+                    type: "GET",
+                    dataType: 'json',
+                    success: function (data) {
+                        $.each(data, function (index, value) {
+                            console.log(value.filename);
+                        });
+                    },
+                    error: function (er) {
+                        alert("error" + er);
+                    }
+                });
+            });
+
+            //$(document).on( 'click', '.dowloadButton', function(){
+            //    var ids;
+            //    $('.check').each(function (index) {
+            //        ids = ids + ',' + this.id;
+            //    });
+
+            //    var formData = new FormData();
+            //    formData.append("ids", ids);
+
+            //    $.ajax({
+            //        url: "/home/Download",
+            //        type: "POST",
+            //        data: formData,
+            //        dataType: "JSON"
+            //        }).done(function (data) {
+            //            console.log(data);
+            //        });
+            //    });
+
+
+            uploadFiles = function () {
+
+                var fileSelect = document.getElementById('file_select');
+
+                var files = fileSelect.files;               
+
+                for (var i = 0; i < files.length; i++) {
+                    var formData = new FormData();
+                    var file = files[i];
+                    formData.append("files", file);
+
+              var jqxhr = $.ajax({
+                  url: "/home/upload",
+                  type: "POST",
+                  contentType: false,
+                  data: formData,
+                  dataType: "json",
+                  cache: false,
+                  processData: false,
+                  async: false,
+                  xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress",
+                      function(evt) {
+                        if (evt.lengthComputable) {
+                          var progress = Math.round((evt.loaded / evt.total) * 100);
+
+                          // Do something with the progress
+                        }
+                      },
+                      false);
+                    return xhr;
+                  }
+                })
+                .done(function(data, textStatus, jqXhr) {
+                  // Clear the input
+                  $("#files").val();
+                })
+                .fail(function(jqXhr, textStatus, errorThrown) {
+                  if (errorThrown === "abort") {
+                    alert("Uploading was aborted");
+                  } else {
+                      console.log(jqXhr);
+                      console.log(textStatus);
+                    alert("Uploading failed");
+                  }
+                })
+                .always(function(data, textStatus, jqXhr) {});      
+                }
+
+                location.reload();
+              
+            };
+        });
+
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+﻿@model WebApplicationUploadV2.Models.FileDownload
+
+<tr id="@Model.Id">
+    <td><input type="checkbox" class="check" id="@Model.Id" /></td>
+    <td>@Model.Filename</td>
+    <td><input type="button" value="Download" downloadId="@Model.Id" class="dowloadButton" /></td>
+</tr>
